@@ -16,6 +16,8 @@
         <option>Selección múltiple</option>
       </select>
     </label>
+
+    <button>Agregar campo</button>
   </form>
 
 </template>
