@@ -1,11 +1,19 @@
 <script setup lang="ts">
+import {useForm} from "vee-validate";
+
+const { defineField } = useForm<{fieldName: string}>();
+const [fieldName, fieldNameAttrs] = defineField('fieldName', {
+  props: _ => ({
+    required: true,
+  })
+})
 
 </script>
 
 <template>
   <form>
     <label>Introduce el nombre del campo
-      <input type="text"/>
+      <input type="text"  v-model="fieldName" v-bind="fieldNameAttrs"/>
     </label>
 
     <label>Introduce qué tipo de datos admite el campo
@@ -19,7 +27,6 @@
 
     <button>Agregar campo</button>
   </form>
-
 </template>
 
 <style scoped>
