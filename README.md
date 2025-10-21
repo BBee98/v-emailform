@@ -360,3 +360,68 @@ const [fieldName, fieldNameAttrs] = defineField('fieldName', {
 
 Al asignar las propiedades mediante ``fieldNameAttrs``, la propiedad ``required`` a la que hemos ahora _setteado_ con el valor ``true``, será asignada
 al controlador, dándonos como resultado que si intentamos _submitear_ el formulario, nos saltará el error de que el campo es requerido.
+
+Sin embargo, definir para **cada campo la misma regla** resulta un poco tedioso y engorroso, por lo que ``vee-validate`` nos ofrece otra manera de establecer unas reglas de manera
+**global**:
+
+> 🌏 https://vee-validate.logaretm.com/v4/guide/global-validators/
+
+Según la documentación, mediante la función ``defineRule`` podemos definir una **regla** que aplique a los controladores que deseemos:
+
+```js
+import { defineRule } from 'vee-validate';
+defineRule('required', value => {
+  if (!value || !value.length) {
+    return 'This field is required';
+  }
+  return true;
+});
+```
+
+De hecho la propia documentación nos facilita la regla para los campos requeridos.
+
+Vamos a probarla tal cual.
+
+Creemos un fichero ``validation.ts`` al nivel de nuestro form:
+
+````
+src/
+└── features/
+    └── Form
+        └── FormBuilder.vue
+        └── validations.ts
+````
+
+Y dentro copiemos la función que nos ha dado la documentación:
+
+````typescript
+import { defineRule } from 'vee-validate';
+
+defineRule('required', (value: string) => {
+    if (!value || !value.length) {
+        return 'This field is required';
+    }
+    return true;
+});
+````
+
+Al igual que cuando definimos el campo, tenemos que **definir** el nombre de la regla (a la que se ha denominado ``required``) y definir qué condiciones deben cumplirse
+para que ésta sea válida.
+
+Para poder utilizarla en el formulario, debemos extender la parte en la que definimos el mismo:
+
+````typescript
+const { defineField, handleSubmit } = useForm<{fieldName: string}>({
+  validationSchema: {
+    fieldName: 'required'
+  }
+});
+````
+
+> 📝 VeeValidate tiene una buena **compenetración** con librerías como ``zod`` o ``yup`` que facilitan la validación de los formularios,
+> pero para este proyecto no las utilizaremos porque la idea es aprender bien las bases de la creación de formularios.
+
+Usamos `'required'` como `valor` porque es la **denominación** que le dimos a la regla.
+
+
+
