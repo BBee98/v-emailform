@@ -328,23 +328,23 @@ const [fieldName, fieldNameAttrs] = defineField('fieldName', {
 })
 ```
 
-Debemos extender la función ``defineProps`` para poder acceder a la propiedad ``props``, la cual nos permite recoger el valor ``state``, donde se almacenan
+Debemos extender la función ``defineProps`` para poder acceder a la propiedad ``props``, la cual nos permite recoger el
+valor ``state``, donde se almacenan
 **todos los datos vinculados al controlador**:
-
 
 ```typescript
 {
- dirty:false // <--- Nos indica si el valor original del controlador ha sido modificado
- errors:[]
- initialValue:undefined
- label:undefined
- path:"fieldName" // <--- Aquí tenemos definido el nombre de nuestro controlador
- pending:false
- required:false
- touched:false
- valid:true
- validated:false
- value:undefined
+    dirty:false // <--- Nos indica si el valor original del controlador ha sido modificado
+    errors:[]
+    initialValue:undefined
+    label:undefined
+    path:"fieldName" // <--- Aquí tenemos definido el nombre de nuestro controlador
+    pending:false
+    required:false
+    touched:false
+    valid:true
+    validated:false
+    value:undefined
 }
 ```
 
@@ -352,29 +352,34 @@ Así que si hacemos algo así:
 
 ````typescript
 const [fieldName, fieldNameAttrs] = defineField('fieldName', {
-  props: _ => ({
-    required: true,
-  })
+    props: _ => ({
+        required: true,
+    })
 })
 ````
 
-Al asignar las propiedades mediante ``fieldNameAttrs``, la propiedad ``required`` a la que hemos ahora _setteado_ con el valor ``true``, será asignada
-al controlador, dándonos como resultado que si intentamos _submitear_ el formulario, nos saltará el error de que el campo es requerido.
+Al asignar las propiedades mediante ``fieldNameAttrs``, la propiedad ``required`` a la que hemos ahora _setteado_ con el
+valor ``true``, será asignada
+al controlador, dándonos como resultado que si intentamos _submitear_ el formulario, nos saltará el error de que el
+campo es requerido.
 
-Sin embargo, definir para **cada campo la misma regla** resulta un poco tedioso y engorroso, por lo que ``vee-validate`` nos ofrece otra manera de establecer unas reglas de manera
+Sin embargo, definir para **cada campo la misma regla** resulta un poco tedioso y engorroso, por lo que ``vee-validate``
+nos ofrece otra manera de establecer unas reglas de manera
 **global**:
 
 > 🌏 https://vee-validate.logaretm.com/v4/guide/global-validators/
 
-Según la documentación, mediante la función ``defineRule`` podemos definir una **regla** que aplique a los controladores que deseemos:
+Según la documentación, mediante la función ``defineRule`` podemos definir una **regla** que aplique a los controladores
+que deseemos:
 
 ```js
-import { defineRule } from 'vee-validate';
+import {defineRule} from 'vee-validate';
+
 defineRule('required', value => {
-  if (!value || !value.length) {
-    return 'This field is required';
-  }
-  return true;
+    if (!value || !value.length) {
+        return 'This field is required';
+    }
+    return true;
 });
 ```
 
@@ -395,7 +400,7 @@ src/
 Y dentro copiemos la función que nos ha dado la documentación:
 
 ````typescript
-import { defineRule } from 'vee-validate';
+import {defineRule} from 'vee-validate';
 
 defineRule('required', (value: string) => {
     if (!value || !value.length) {
@@ -405,23 +410,163 @@ defineRule('required', (value: string) => {
 });
 ````
 
-Al igual que cuando definimos el campo, tenemos que **definir** el nombre de la regla (a la que se ha denominado ``required``) y definir qué condiciones deben cumplirse
+Al igual que cuando definimos el campo, tenemos que **definir** el nombre de la regla (a la que se ha denominado
+``required``) y definir qué condiciones deben cumplirse
 para que ésta sea válida.
 
 Para poder utilizarla en el formulario, debemos extender la parte en la que definimos el mismo:
 
 ````typescript
-const { defineField, handleSubmit } = useForm<{fieldName: string}>({
-  validationSchema: {
-    fieldName: 'required'
-  }
+const {defineField, handleSubmit} = useForm<{ fieldName: string }>({
+    validationSchema: {
+        fieldName: 'required'
+    }
 });
 ````
 
-> 📝 VeeValidate tiene una buena **compenetración** con librerías como ``zod`` o ``yup`` que facilitan la validación de los formularios,
+> 📝 VeeValidate tiene una buena **compenetración** con librerías como ``zod`` o ``yup`` que facilitan la validación de
+> los formularios,
 > pero para este proyecto no las utilizaremos porque la idea es aprender bien las bases de la creación de formularios.
 
 Usamos `'required'` como `valor` porque es la **denominación** que le dimos a la regla.
 
+Para obtener los campos que hallan fallado, la función `useForm` nos facilita de un objeto donde contiene los errores
+para
+**cada campo** llamado `errors`.
+
+Si escribimos: `errors.fieldName` obtendremos el mensaje de error asociado.
+
+> 🌏 https://vee-validate.logaretm.com/v4/guide/composition-api/handling-forms#errors
+
+> 📝 También se nos facilita otro objeto llamado `errorBags` que contiene un array de **todos los errores** de validación
+> asociados
+> al campo que deseemos. Dependiendo de lo que necesitemos, precisaremos de usar de uno o de otro.
+
+##### Recoger los datos del formulario: ```handleSubmit```
+
+Los datos que se plasmen en el formulario pueden ser recogidos mediante la función `handleSubmit`. Esta función recibe
+por parámetro a ``data`` del formulario,
+y para acceder a ella podemos hacer algo como esto:
+
+````typescript
+const { handleSubmit } = useForm();
+const onSubmit = handleSubmit((data) => {
+    console.log("data", data)
+})
+````
+
+Tenemos que almacenar la función en una constante para luego vincularla al formulario:
+
+```vue
+<form @submit="onSubmit">
+  ...
+</form>
+```
 
 
+> Para _bindear_ atributos a los elementos html usamos la directiva ``v-bind``, y para _triggerear_ acciones debemos hacerlo utilizando ``@``, al contrario
+> que en react, que se usa el prefijo `on` por delante de la acción a disparar.
+
+📝 Es posible que necesitemos desarrollar una lógica bastante densa dentro del ``submit``, y a mí, personalmente, tenerlo en el mismo componente no me gusta
+porque si luego éste crece mucho, se hace difícil de leer. Podemos aislar la lógica de la siguiente manera:
+
+````
+src/
+└── features/
+    └── Form
+        └── FormBuilder.vue
+        └── validations.ts
+        └── handler.ts
+````
+
+Creamos un fichero llamado ``handler.ts`` donde desarrollaremos esa lógica:
+
+```typescript
+import {FormBuilderType} from "./types.ts";
+
+export const handleData = (data: FormBuilderType) => {
+    console.log("data", data)
+}
+```
+
+Y luego esa función la llamamos dentro del ``handleSubmit`` que nos facilita el componente:
+
+```typescript
+import {handleData} from "./handler.ts";
+const { handleSubmit } = useForm();
+const onSubmit = handleSubmit((data) => handleData(data))
+```
+
+
+> 📝 `useForm` admite tipos genéricos, así que podemos crear un ``type`` con el que definamos los campos de los que se
+> compone el formulario:
+> 
+> ````
+> src/
+> └── features/
+> └── Form
+> └── FormBuilder.vue
+> └── validations.ts
+> └── handler.ts
+> └── types.ts
+> ````
+> 
+> ```typescript
+> export type FormBuilderType = {
+>    fieldName: string,
+>    fieldType: string,
+> }
+> ```
+> 
+> 
+> ```typescript
+> const { defineField, handleSubmit, errors } = useForm<FormBuilderType>({
+> validationSchema: {
+> fieldName: 'required'
+> }
+> });
+> ```
+
+
+Así que ahora nuestro componente luce asi:
+
+```vue
+<script setup lang="ts">
+import {useForm} from "vee-validate";
+import {handleData} from "./handler.ts";
+import {FormBuilderType} from "./types.ts";
+
+const { defineField, handleSubmit, errors } = useForm<FormBuilderType>({
+  validationSchema: {
+    fieldName: 'required'
+  }
+});
+const [fieldName, fieldNameAttrs] = defineField('fieldName')
+const [fieldType, fieldTypeAttrs] = defineField('fieldType')
+const onSubmit = handleSubmit((data) => handleData(data))
+
+</script>
+<template>
+  <form @submit="onSubmit">
+    <label>Introduce el nombre del campo
+      <input type="text"  v-model="fieldName" v-bind="fieldNameAttrs" />
+      <small> {{ errors.fieldName }}</small>
+    </label>
+
+    <label>Introduce qué tipo de datos admite el campo
+      <select v-model="fieldType" v-bind="fieldTypeAttrs">
+        <option>Texto</option>
+        <option>Números</option>
+        <option>Selección única</option>
+        <option>Selección múltiple</option>
+      </select>
+    </label>
+
+    <button>Agregar campo</button>
+  </form>
+</template>
+
+<style scoped>
+
+</style>
+```

@@ -3,23 +3,25 @@ import {useForm} from "vee-validate";
 import {handleData} from "./handler.ts";
 import {FormBuilderType} from "./types.ts";
 
-const { defineField, handleSubmit } = useForm<FormBuilderType>({
+const { defineField, handleSubmit, errors } = useForm<FormBuilderType>({
   validationSchema: {
     fieldName: 'required'
   }
 });
 const [fieldName, fieldNameAttrs] = defineField('fieldName')
-const onSubmit = handleSubmit((data, error) => handleData(data, error))
+const [fieldType, fieldTypeAttrs] = defineField('fieldType')
+const onSubmit = handleSubmit((data) => handleData(data))
 
 </script>
 <template>
   <form @submit="onSubmit">
     <label>Introduce el nombre del campo
       <input type="text"  v-model="fieldName" v-bind="fieldNameAttrs" />
+      <small> {{ errors.fieldName }}</small>
     </label>
 
     <label>Introduce qué tipo de datos admite el campo
-      <select>
+      <select v-model="fieldType" v-bind="fieldTypeAttrs">
         <option>Texto</option>
         <option>Números</option>
         <option>Selección única</option>
