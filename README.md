@@ -1,6 +1,6 @@
 # Aprendiendo Vue
 
-## Ordenando el proyecto: Arquitectura
+## 1. Ordenando el proyecto: Arquitectura
 
 ### Feature Architecture + Composable
 
@@ -27,7 +27,7 @@ Primero de todo, vamos a realizar la instalación
 > la v3.
 > Más información aquí 👉https://vee-validate.logaretm.com/v4/
 
-### 1. Prólogo
+### 2. Formulario con VeeValidate
 
 Según la documentación de **VeeValidate** (a la que llamaremos **VV** a partir de ahora), existen dos maneras
 de componer los formularios:
@@ -570,3 +570,48 @@ const onSubmit = handleSubmit((data) => handleData(data))
 
 </style>
 ```
+
+### 3. Vuetify, embellecer la aplicación.
+
+> 🌏 https://vuetifyjs.com/en/getting-started/installation/#existing-projects
+
+Vuetify nos permite empezar un proyecto o **instalarlo en uno ya creado** (que es nuestro caso.)
+
+```bash
+npm i vuetify
+```
+
+Ahora debemos modificar el fichero main para que se cree de entrada los componentes y directivas:
+
+````typescript
+import './features/Form/validations.ts'
+import './style.css'
+import App from './App.vue'
+import { createApp } from 'vue'
+
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
+// Components
+
+const vuetify = createVuetify({
+    components,
+    directives,
+})
+
+createApp(App).use(vuetify).mount('#app')
+````
+
+> ‼️Ten cuidado porque la configuración recomendada tiene un **fallo**. Cuando importamos los estilos:
+> ``import 'vuetify/styles'``
+> Nos da el siguiente error:
+> ```Vue: Cannot find module vuetify/styles or its corresponding type declarations.```
+> Para arreglar esto, debenos **extender el import** hasta ``main.css``
+> 
+> ```` import 'vuetify/styles/main.css'````
+> 
+> 👉 Aquí tienes la solución al respecto: https://www.reddit.com/r/vuejs/comments/1i4zee2/cannot_find_module_vuetifystyles_or_its/
+
